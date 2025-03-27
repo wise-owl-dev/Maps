@@ -15,10 +15,22 @@ class LoginScreenController {
     }
 
     try {
-      final success = await _authService.signInWithEmailAndPassword(email, password);
-      if (success) {
-        // Navegar a la pantalla principal
-        Navigator.of(context).pushReplacementNamed('/home');
+      final userInfo = await _authService.signInWithEmailAndPassword(email, password);
+      if (userInfo != null) {
+        // Navegar según el rol del usuario
+        switch (userInfo['role']) {
+          case 'admin':
+            Navigator.of(context).pushReplacementNamed('/admin-menu');
+            break;
+          case 'operador':
+            Navigator.of(context).pushReplacementNamed('/operador-menu');
+            break;
+          case 'user':
+            Navigator.of(context).pushReplacementNamed('/user-menu');
+            break;
+          default:
+            Navigator.of(context).pushReplacementNamed('/home');
+        }
       } else {
         _showErrorDialog(context, 'Credenciales inválidas');
       }
@@ -29,10 +41,22 @@ class LoginScreenController {
 
   Future<void> handleGoogleSignIn(BuildContext context) async {
     try {
-      final success = await _authService.signInWithGoogle();
-      if (success) {
-        // Navegar a la pantalla principal
-        Navigator.of(context).pushReplacementNamed('/home');
+      final userInfo = await _authService.signInWithGoogle();
+      if (userInfo != null) {
+        // Navegar según el rol del usuario (implementación de ejemplo)
+        switch (userInfo['role']) {
+          case 'admin':
+            Navigator.of(context).pushReplacementNamed('/admin-menu');
+            break;
+          case 'operador':
+            Navigator.of(context).pushReplacementNamed('/operador-menu');
+            break;
+          case 'user':
+            Navigator.of(context).pushReplacementNamed('/user-menu');
+            break;
+          default:
+            Navigator.of(context).pushReplacementNamed('/home');
+        }
       } else {
         _showErrorDialog(context, 'Error en inicio de sesión con Google');
       }

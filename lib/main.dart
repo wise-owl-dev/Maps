@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/splash/splash_screen.dart';
+import 'screens/menu/admin_menu_screen.dart';
+import 'screens/menu/operador_menu_screen.dart';
+import 'screens/menu/user_menu_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,6 +25,9 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/admin-menu': (context) => const AdminMenuScreen(),
+        '/operador-menu': (context) => const OperadorMenuScreen(),
+        '/user-menu': (context) => const UserMenuScreen(),
       },
     );
   }
