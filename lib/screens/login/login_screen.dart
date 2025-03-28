@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(width: 8),
             const Text(
-              'Logoipsum',
+              'Autotransportes Zaachila-Yoo',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 24),
         const Text(
-          'Sign in to your\nAccount',
+          'Iniciar Sesión',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Enter your email and password to log in',
+          'Ingrese su correo electrónico y contraseña para continuar',
           style: TextStyle(color: Colors.grey),
         ),
       ],
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextField(
       controller: _passwordController,
       decoration: InputDecoration(
-        labelText: 'Password',
+        labelText: 'Contraseña',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SnackBar(content: Text('Funcionalidad no implementada'))
           );
         },
-        child: const Text('Forgot Password?'),
+        child: const Text('¿Olvidaste tu contraseña?'),
       ),
     );
   }
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
       child: const Text(
-        'Log In',
+        'Iniciar Sesión',
         style: TextStyle(
           color: Colors.white,
           fontSize: 16,
@@ -182,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
         'assets/google_logo.png',
         height: 24,
       ),
-      label: const Text('Continue with Google'),
+      label: const Text('Iniciar con Google'),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Don't have an account?"),
+        const Text("¿No tienes una cuenta?"),
         TextButton(
           onPressed: () {
             // TODO: Navegar a la pantalla de registro
@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SnackBar(content: Text('Registro no implementado'))
             );
           },
-          child: const Text('Sign Up'),
+          child: const Text('Regístrate'),
         ),
       ],
     );
