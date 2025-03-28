@@ -198,11 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         const Text("¿No tienes una cuenta?"),
         TextButton(
-          onPressed: () {
-            // TODO: Navegar a la pantalla de registro
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Registro no implementado'))
-            );
+            onPressed: () {
+            // Navegar a la pantalla de registro
+            Navigator.of(context).pushNamed('/signup');
           },
           child: const Text('Regístrate'),
         ),

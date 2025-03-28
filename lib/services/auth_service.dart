@@ -38,4 +38,33 @@ class AuthService {
     // En una implementación real, obtendrías el rol del usuario
     return null;
   }
+
+  // Nuevo método para registrar usuarios
+  Future<bool> registerUser({
+    required String nombre,
+    required String apellidoPaterno,
+    required String apellidoMaterno,
+    required String email,
+    required String password,
+    required String telefono,
+  }) async {
+    // Simular tiempo de registro
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Verificar si el correo ya existe
+    if (_mockUsers.containsKey(email)) {
+      return false;
+    }
+
+    // Agregar nuevo usuario con rol por defecto 'user'
+    _mockUsers[email] = {
+      'password': password,
+      'role': 'user',
+      'name': '$nombre $apellidoPaterno $apellidoMaterno',
+      'email': email,
+      'telefono': telefono
+    };
+
+    return true;
+  }
 }
