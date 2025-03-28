@@ -70,35 +70,38 @@ class UserMenuScreen extends StatelessWidget {
                 children: [
                   _MenuOption(
                     icon: Icons.directions_bus,
-                    title: 'Mis Viajes',
-                    onTap: () => _handleMenuOption(context, 'Viajes'),
+                    title: 'Ruta En Tiempo Real',
+                    onTap: () => _handleMenuOption(context, 'Ruta En Tiempo Real'),
                   ),
                   _MenuOption(
                     icon: Icons.calendar_today,
-                    title: 'Reservar Viaje',
-                    onTap: () => _handleMenuOption(context, 'Reservar'),
-                  ),
-                  _MenuOption(
-                    icon: Icons.map,
                     title: 'Rutas',
                     onTap: () => _handleMenuOption(context, 'Rutas'),
                   ),
                   _MenuOption(
-                    icon: Icons.help_outline,
-                    title: 'Soporte',
-                    onTap: () => _handleMenuOption(context, 'Soporte'),
+                    icon: Icons.map,
+                    title: 'Paradas',
+                    onTap: () => _handleMenuOption(context, 'Paradas'),
                   ),
-                  const Divider(height: 40),
                   _MenuOption(
-                    icon: Icons.logout,
-                    title: 'Cerrar sesión',
-                    textColor: Colors.red,
-                    iconColor: Colors.red,
-                    onTap: () => _handleLogout(context),
+                    icon: Icons.help_outline,
+                    title: 'Consultar Autobus',
+                    onTap: () => _handleMenuOption(context, 'Consultar Autobus'),
                   ),
                 ],
               ),
             ),
+
+            // Mover cerrar sesión al final
+            const Divider(),
+            _MenuOption(
+              icon: Icons.logout,
+              title: 'Cerrar sesión',
+              textColor: Colors.blue,
+              iconColor: Colors.blue,
+              onTap: () => _handleLogout(context),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -106,7 +109,7 @@ class UserMenuScreen extends StatelessWidget {
   }
 }
 
-// Widget personalizado para las opciones del menú (igual que en el ejemplo anterior)
+// Reutilizamos la misma clase _MenuOption del menú de admin
 class _MenuOption extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -131,7 +134,7 @@ class _MenuOption extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -152,13 +155,13 @@ class _MenuOption extends StatelessWidget {
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.red.shade100,
+                color: Colors.blue.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 badge!,
                 style: TextStyle(
-                  color: Colors.red.shade700,
+                  color: Colors.blue.shade700,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),

@@ -28,12 +28,12 @@ class AdminMenuScreen extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.red.shade100,
+                      color: Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: const Icon(
                       Icons.admin_panel_settings,
-                      color: Colors.red,
+                      color: Colors.blue,
                       size: 30,
                     ),
                   ),
@@ -70,30 +70,43 @@ class AdminMenuScreen extends StatelessWidget {
                 children: [
                   _MenuOption(
                     icon: Icons.person_outline,
-                    title: 'Gestión de Usuarios',
-                    onTap: () => _handleMenuOption(context, 'Usuarios'),
+                    title: 'Operadores',
+                    onTap: () => _handleMenuOption(context, 'Operadores'),
                   ),
                   _MenuOption(
                     icon: Icons.settings,
-                    title: 'Configuración Sistema',
-                    onTap: () => _handleMenuOption(context, 'Configuración'),
+                    title: 'Autobuses',
+                    onTap: () => _handleMenuOption(context, 'Autobuses'),
                   ),
                   _MenuOption(
                     icon: Icons.analytics_outlined,
-                    title: 'Reportes',
-                    onTap: () => _handleMenuOption(context, 'Reportes'),
+                    title: 'Recorridos',
+                    onTap: () => _handleMenuOption(context, 'Recorridos'),
                   ),
-                  const Divider(height: 40),
                   _MenuOption(
-                    icon: Icons.logout,
-                    title: 'Cerrar sesión',
-                    textColor: Colors.red,
-                    iconColor: Colors.red,
-                    onTap: () => _handleLogout(context),
+                    icon: Icons.analytics_outlined,
+                    title: 'Asignaciones',
+                    onTap: () => _handleMenuOption(context, 'Asignaciones'),
+                  ),
+                  _MenuOption(
+                    icon: Icons.analytics_outlined,
+                    title: 'Paradas',
+                    onTap: () => _handleMenuOption(context, 'Paradas'),
                   ),
                 ],
               ),
             ),
+
+            // Mover cerrar sesión al final
+            const Divider(),
+            _MenuOption(
+              icon: Icons.logout,
+              title: 'Cerrar sesión',
+              textColor: Colors.blue,
+              iconColor: Colors.blue,
+              onTap: () => _handleLogout(context),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -101,7 +114,7 @@ class AdminMenuScreen extends StatelessWidget {
   }
 }
 
-// Widget personalizado para las opciones del menú (igual que en el ejemplo anterior)
+// Widget personalizado para las opciones del menú
 class _MenuOption extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -126,7 +139,7 @@ class _MenuOption extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -147,13 +160,13 @@ class _MenuOption extends StatelessWidget {
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.red.shade100,
+                color: Colors.blue.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 badge!,
                 style: TextStyle(
-                  color: Colors.red.shade700,
+                  color: Colors.blue.shade700,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
