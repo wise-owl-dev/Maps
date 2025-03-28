@@ -19,8 +19,9 @@ class SplashScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color.fromARGB(255,33,150,243), // Púrpura más oscuro
-              Color.fromARGB(255, 187, 222, 251), // Púrpura más claro
+              Color.fromARGB(255,33,150,243), // AZUL más oscuro
+               // AZUL más claro
+              Color.fromARGB(255, 195, 223, 245)
             ],
           ),
         ),
@@ -31,14 +32,14 @@ class SplashScreen extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Container(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Image.asset(
                     'assets/splash_image.png', // Cambia a un asset local
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(
                         Icons.directions_bus,
-                        size: 120,
+                        size: 700,
                         color: Colors.white,
                       );
                     },
