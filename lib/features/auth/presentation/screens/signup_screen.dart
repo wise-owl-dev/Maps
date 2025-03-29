@@ -57,6 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: 'Nombre',
                     border: OutlineInputBorder(),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese su nombre';
@@ -66,6 +67,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -74,6 +76,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: 'Apellido Paterno',
                     border: OutlineInputBorder(),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese su apellido paterno';
@@ -83,6 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -91,6 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: 'Apellido Materno',
                     border: OutlineInputBorder(),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese su apellido materno';
@@ -100,6 +105,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -109,6 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: 'Correo electrónico',
                     border: OutlineInputBorder(),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese su correo electrónico';
@@ -118,6 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -137,6 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                     ),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese una contraseña';
@@ -146,6 +155,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -155,6 +165,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     labelText: 'Teléfono',
                     border: OutlineInputBorder(),
                   ),
+                  /*
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Por favor ingrese su número de teléfono';
@@ -164,6 +175,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     return null;
                   },
+                  */
                 ),
                 const SizedBox(height: 32),
                 SizedBox(

@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import '../login/login_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
-
-  void _handleGetStarted(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen())
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +76,7 @@ class SplashScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => _handleGetStarted(context),
+                        onPressed: ()=> context.push('/login'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color.fromARGB(255,33,150,243),
                           foregroundColor: Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -140,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: () {
         // Aquí iría la implementación del login
         // Navegamos directo a la pantalla de usuario para el ejemplo
-        Navigator.of(context).pushReplacementNamed('/user-menu');
+        //Navigator.of(context).pushReplacementNamed('/user-menu');
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
@@ -165,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(child: Divider()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Or'),
+          child: Text('O'),
         ),
         Expanded(child: Divider()),
       ],
@@ -197,9 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         const Text("¿No tienes una cuenta?"),
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pushNamed('/signup');
-          },
+          onPressed: ()=> context.push('/signup'),
           child: const Text('Regístrate'),
         ),
       ],
