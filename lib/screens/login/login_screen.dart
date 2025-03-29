@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'login_screen_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,7 +11,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  final LoginScreenController _controller = LoginScreenController();
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: () {
-          // TODO: Implementar recuperación de contraseña
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Funcionalidad no implementada'))
           );
@@ -140,11 +137,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLoginButton() {
     return ElevatedButton(
-      onPressed: () => _controller.handleLogin(
-        context, 
-        _emailController.text, 
-        _passwordController.text
-      ),
+      onPressed: () {
+        // Aquí iría la implementación del login
+        // Navegamos directo a la pantalla de usuario para el ejemplo
+        Navigator.of(context).pushReplacementNamed('/user-menu');
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -177,7 +174,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildGoogleSignInButton() {
     return OutlinedButton.icon(
-      onPressed: () => _controller.handleGoogleSignIn(context),
+      onPressed: () {
+        // Implementación de inicio de sesión con Google
+      },
       icon: Image.asset(
         'assets/google_logo.png',
         height: 24,
@@ -198,8 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         const Text("¿No tienes una cuenta?"),
         TextButton(
-            onPressed: () {
-            // Navegar a la pantalla de registro
+          onPressed: () {
             Navigator.of(context).pushNamed('/signup');
           },
           child: const Text('Regístrate'),

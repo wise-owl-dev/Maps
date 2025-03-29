@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:maps_app/screens/signup/signup_screen_controller.dart';
-
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -19,17 +17,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _telefonoController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _apellidoPaternoController.dispose();
-    _apellidoMaternoController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _telefonoController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,15 +171,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        final controller = SignUpScreenController();
-                        controller.handleSignUp(
-                          context,
-                          _nombreController.text,
-                          _apellidoPaternoController.text,
-                          _apellidoMaternoController.text,
-                          _emailController.text,
-                          _passwordController.text,
-                          _telefonoController.text
+                        // Mostrar diálogo de éxito
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Registro Exitoso'),
+                            content: const Text('Su cuenta ha sido creada correctamente.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(ctx).pop();
+                                  Navigator.of(context).pushReplacementNamed('/login');
+                                }, 
+                                child: const Text('Aceptar')
+                              )
+                            ],
+                          ),
                         );
                       }
                     },
@@ -220,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        // Navegar a la pantalla de inicio de sesión
+                        Navigator.of(context).pushReplacementNamed('/login');
                       },
                       child: const Text('Iniciar sesión'),
                     ),
@@ -232,5 +226,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
+  }
+  
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _apellidoPaternoController.dispose();
+    _apellidoMaternoController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _telefonoController.dispose();
+    super.dispose();
   }
 }

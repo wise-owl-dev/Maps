@@ -6,7 +6,6 @@ import 'screens/menu/admin_menu_screen.dart';
 import 'screens/menu/operador_menu_screen.dart';
 import 'screens/menu/user_menu_screen.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -26,8 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignUpScreen(), // Agregar esta línea
-         //'/home': (context) => const HomeScreen(),
+        '/signup': (context) => const SignUpScreen(),
         '/admin-menu': (context) => const AdminMenuScreen(),
         '/operador-menu': (context) => const OperadorMenuScreen(),
         '/user-menu': (context) => const UserMenuScreen(),
