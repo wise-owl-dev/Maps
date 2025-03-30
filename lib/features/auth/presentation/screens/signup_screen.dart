@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:maps_app/features/auth/auth.dart';
+import 'package:maps_app/features/shared/shared.dart';
 
-class SignUpScreen extends StatefulWidget {
+
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
-  @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
-  final _formKey = GlobalKey<FormState>();
-  bool _obscurePassword = true;
+    @override
+    ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+  }
   
-  final _nombreController = TextEditingController();
-  final _apellidoPaternoController = TextEditingController();
-  final _apellidoMaternoController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _telefonoController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
+  class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+    bool _obscurePassword = true;
+  
+    @override
+    Widget build(BuildContext context) {
+      
+       final signUpForm = ref.watch(signUpFormProvider);
+    
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -30,224 +30,128 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Crear cuenta',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Complete el formulario para registrarse',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 32),
+              CustomTextFormField(
+                label: 'Nombre',
+                hint: 'Ingrese su nombre',
+                onChanged: ref.read(signUpFormProvider.notifier).onNameChanged,
+                errorMessage: signUpForm.isFormPosted ?
+                    signUpForm.name.errorMessage 
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextFormField(
+                label: 'Apellido Paterno',
+                hint: 'Ingrese su apellido paterno',
+                onChanged: ref.read(signUpFormProvider.notifier).onLastNameChanged,
+                errorMessage: signUpForm.isFormPosted ?
+                    signUpForm.lastName.errorMessage 
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextFormField(
+                label: 'Apellido Materno',
+                hint: 'Ingrese su apellido materno',
+                onChanged: ref.read(signUpFormProvider.notifier).onLastNameChanged,
+                errorMessage: signUpForm.isFormPosted ?
+                    signUpForm.lastName.errorMessage 
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              CustomTextFormField(
+              label: 'Email',
+              hint: 'correo@ejemplo.com',
+              keyboardType: TextInputType.emailAddress,
+              onChanged: ref.read(signUpFormProvider.notifier).onEmailChange,
+              errorMessage: signUpForm.isFormPosted ?
+                    signUpForm.email.errorMessage 
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              Stack(
+              alignment: Alignment.centerRight,
               children: [
-                const Text(
-                  'Crear cuenta',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Complete el formulario para registrarse',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _nombreController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    border: OutlineInputBorder(),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su nombre';
-                    }
-                    if (!RegExp(r'^[A-Za-zÀ-ÿ\s]*$').hasMatch(value)) {
-                      return 'El nombre solo puede contener letras';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _apellidoPaternoController,
-                  decoration: const InputDecoration(
-                    labelText: 'Apellido Paterno',
-                    border: OutlineInputBorder(),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su apellido paterno';
-                    }
-                    if (!RegExp(r'^[A-Za-zÀ-ÿ\s]*$').hasMatch(value)) {
-                      return 'El apellido solo puede contener letras';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _apellidoMaternoController,
-                  decoration: const InputDecoration(
-                    labelText: 'Apellido Materno',
-                    border: OutlineInputBorder(),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su apellido materno';
-                    }
-                    if (!RegExp(r'^[A-Za-zÀ-ÿ\s]*$').hasMatch(value)) {
-                      return 'El apellido solo puede contener letras';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo electrónico',
-                    border: OutlineInputBorder(),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su correo electrónico';
-                    }
-                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value)) {
-                      return 'Ingrese un correo electrónico válido';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
+                CustomTextFormField(
+                  label: 'Contraseña',
+                  hint: '********',
                   obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                  onChanged: ref.read(signUpFormProvider.notifier).onPasswordChanged,
+                  errorMessage:signUpForm.isFormPosted ?
+                      signUpForm.password.errorMessage 
+                      : null, 
+                ),
+                  
+                // Posicionar el botón para mostrar/ocultar contraseña
+                Positioned(
+                  right: 15,
+                  child: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
                     ),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese una contraseña';
-                    }
-                    if (value.length < 8) {
-                      return 'La contraseña debe tener al menos 8 caracteres';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _telefonoController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Teléfono',
-                    border: OutlineInputBorder(),
-                  ),
-                  /*
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su número de teléfono';
-                    }
-                    if (!RegExp(r'^\d*$').hasMatch(value)) {
-                      return 'El teléfono solo puede contener números';
-                    }
-                    return null;
-                  },
-                  */
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Mostrar diálogo de éxito
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Registro Exitoso'),
-                            content: const Text('Su cuenta ha sido creada correctamente.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(ctx).pop();
-                                  Navigator.of(context).pushReplacementNamed('/login');
-                                }, 
-                                child: const Text('Aceptar')
-                              )
-                            ],
-                          ),
-                        );
-                      }
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Registrarse',
-                      style: TextStyle(fontSize: 16),
-                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      '¿Ya tienes una cuenta? ',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacementNamed('/login');
-                      },
-                      child: const Text('Iniciar sesión'),
-                    ),
-                  ],
                 ),
               ],
-            ),
+              ), 
+              const SizedBox(height: 16),
+              CustomTextFormField(
+                label: 'Teléfono',
+                hint: 'Ingrese su número de teléfono',
+                keyboardType: TextInputType.phone,
+                onChanged: ref.read(signUpFormProvider.notifier).onPhoneChanged,
+                errorMessage: signUpForm.isFormPosted ?
+                    signUpForm.phone.errorMessage 
+                    : null,
+              ),
+              const SizedBox(height: 32),           
+              CustomFilledButton(
+                text: 'Registrarse',
+                onPressed: () { 
+                  ref.read(signUpFormProvider.notifier).onFormSubmit();
+                },
+                
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '¿Ya tienes una cuenta? ',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/login'),
+                    child: const Text('Iniciar sesión'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
-  }
-  
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _apellidoPaternoController.dispose();
-    _apellidoMaternoController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _telefonoController.dispose();
-    super.dispose();
   }
 }

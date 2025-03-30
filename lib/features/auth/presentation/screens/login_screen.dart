@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maps_app/features/auth/presentation/providers/login_form_provider.dart';
+import 'package:maps_app/features/shared/shared.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+class LoginScreen extends ConsumerWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -22,26 +19,101 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-                _buildEmailField(),
-                const SizedBox(height: 16),
-                _buildPasswordField(),
-                _buildForgotPasswordLink(),
-                const SizedBox(height: 16),
-                _buildLoginButton(),
-                const SizedBox(height: 24),
-                _buildOrDivider(),
-                const SizedBox(height: 24),
-                _buildGoogleSignInButton(),
-                const SizedBox(height: 24),
-                _buildSignUpLink(),
+              children: const [
+                _LoginForm(),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LoginForm extends ConsumerStatefulWidget {
+  const _LoginForm({Key? key}) : super(key: key);
+
+  @override
+  _LoginFormState createState() => _LoginFormState();
+}
+
+class _LoginFormState extends ConsumerState<_LoginForm> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  
+
+  @override
+  Widget build(BuildContext context) {
+    // Aquí podrías usar tu provider para el formulario
+    final loginForm = ref.watch(loginFormProvider);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildHeader(),
+        const SizedBox(height: 32),
+
+        CustomTextFormField(
+        label: 'Email',
+        hint: 'correo@ejemplo.com',
+        keyboardType: TextInputType.emailAddress,
+        onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
+        errorMessage: loginForm.isFormPosted ?
+               loginForm.email.errorMessage 
+               : null,
+        ),
+    
+        const SizedBox(height: 16),
+
+      // Campo de contraseña
+      Stack(
+      alignment: Alignment.centerRight,
+      children: [
+        CustomTextFormField(
+          label: 'Contraseña',
+          hint: '********',
+          obscureText: _obscurePassword,
+          onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
+          errorMessage:loginForm.isFormPosted ?
+               loginForm.password.errorMessage 
+               : null, 
+        ),
+          
+        // Posicionar el botón para mostrar/ocultar contraseña
+        Positioned(
+          right: 15,
+          child: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey,
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+        ),
+      ],
+      ), 
+        _buildForgotPasswordLink(),
+
+        const SizedBox(height: 24),
+        CustomFilledButton(
+          text: 'Iniciar Sesión',
+          onPressed: () {
+            ref.read(loginFormProvider.notifier).onFormSubmit();
+          },
+        ),
+
+        const SizedBox(height: 24),
+        _buildOrDivider(),
+        const SizedBox(height: 24),
+        _buildGoogleSignInButton(),
+        const SizedBox(height: 24),
+        _buildSignUpLink(),
+      ],
     );
   }
 
@@ -86,41 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildEmailField() {
-    return TextField(
-      controller: _emailController,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      keyboardType: TextInputType.emailAddress,
-    );
-  }
+  
 
-  Widget _buildPasswordField() {
-    return TextField(
-      controller: _passwordController,
-      decoration: InputDecoration(
-        labelText: 'Contraseña',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility_off : Icons.visibility,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
-        ),
-      ),
-      obscureText: _obscurePassword,
-    );
-  }
+ 
 
   Widget _buildForgotPasswordLink() {
     return Align(
@@ -131,34 +171,17 @@ class _LoginScreenState extends State<LoginScreen> {
             const SnackBar(content: Text('Funcionalidad no implementada'))
           );
         },
-        child: const Text('¿Olvidaste tu contraseña?'),
+        child: const Text(
+          '¿Olvidaste tu contraseña?',
+          style: TextStyle(
+            color: Colors.blue,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Aquí iría la implementación del login
-        // Navegamos directo a la pantalla de usuario para el ejemplo
-        //Navigator.of(context).pushReplacementNamed('/user-menu');
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: const Text(
-        'Iniciar Sesión',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-        ),
-      ),
-    );
-  }
 
   Widget _buildOrDivider() {
     return const Row(
@@ -166,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Expanded(child: Divider()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text('O'),
+          child: Text('O', style: TextStyle(color: Colors.grey)),
         ),
         Expanded(child: Divider()),
       ],
@@ -174,19 +197,40 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildGoogleSignInButton() {
-    return OutlinedButton.icon(
-      onPressed: () {
-        // Implementación de inicio de sesión con Google
-      },
-      icon: Image.asset(
-        'assets/google_logo.png',
-        height: 24,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5)
+          )
+        ]
       ),
-      label: const Text('Iniciar con Google'),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+      child: OutlinedButton.icon(
+        onPressed: () {
+          // Implementar lógica de login con Google
+          // ref.read(authProvider.notifier).signInWithGoogle();
+        },
+        icon: Image.asset(
+          'assets/google_logo.png',  // Asegúrate de tener esta imagen
+          height: 24,
+        ),
+        label: const Text(
+          'Iniciar con Google',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 16,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: const BorderSide(color: Colors.transparent),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       ),
     );
@@ -196,10 +240,19 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("¿No tienes una cuenta?"),
+        const Text(
+          "¿No tienes una cuenta?",
+          style: TextStyle(color: Colors.black54),
+        ),
         TextButton(
-          onPressed: ()=> context.push('/signup'),
-          child: const Text('Regístrate'),
+          onPressed: () => context.push('/signup'),
+          child: const Text(
+            'Regístrate',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
         ),
       ],
     );
