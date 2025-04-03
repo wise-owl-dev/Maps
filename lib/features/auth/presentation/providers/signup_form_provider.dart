@@ -1,54 +1,133 @@
-import 'package:maps_app/features/shared/shared.dart';
+// lib/features/auth/presentation/providers/signup_form_provider.dart
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:formz/formz.dart';
+import '../../../shared/shared.dart';
+import 'auth_provider.dart';
 
-//! 3 - StateNotifierProvider - consume afuera
-final signUpFormProvider =
-    StateNotifierProvider.autoDispose<SignUpFormNotifier, SignUpFormState>((
-      ref,
-    ) {
-      return SignUpFormNotifier();
-    });
+class SignUpFormState {
+  final bool isPosting;
+  final bool isFormPosted;
+  final bool isValid;
+  final Name name;
+  final LastName lastName;
+  final LastName maternalLastName;
+  final Email email;
+  final Password password;
+  final Phone phone;
+  final String? errorMessage;
 
-//! 2 - Como implementamos un notifier
+  SignUpFormState({
+    this.isPosting = false,
+    this.isFormPosted = false,
+    this.isValid = false,
+    this.name = const Name.pure(),
+    this.lastName = const LastName.pure(),
+    this.maternalLastName = const LastName.pure(),
+    this.email = const Email.pure(),
+    this.password = const Password.pure(),
+    this.phone = const Phone.pure(),
+    this.errorMessage,
+  });
+
+  SignUpFormState copyWith({
+    bool? isPosting,
+    bool? isFormPosted,
+    bool? isValid,
+    Name? name,
+    LastName? lastName,
+    LastName? maternalLastName,
+    Email? email,
+    Password? password,
+    Phone? phone,
+    String? errorMessage,
+  }) {
+    return SignUpFormState(
+      isPosting: isPosting ?? this.isPosting,
+      isFormPosted: isFormPosted ?? this.isFormPosted,
+      isValid: isValid ?? this.isValid,
+      name: name ?? this.name,
+      lastName: lastName ?? this.lastName,
+      maternalLastName: maternalLastName ?? this.maternalLastName,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      phone: phone ?? this.phone,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
 class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
-  SignUpFormNotifier() : super(SignUpFormState());
+  final Function({
+    required String email,
+    required String password,
+    required String nombre,
+    required String apellidoPaterno,
+    required String apellidoMaterno,
+    required String telefono,
+  }) registerUserCallback;
+
+  SignUpFormNotifier({
+    required this.registerUserCallback,
+  }) : super(SignUpFormState());
+
+  onNameChanged(String value) {
+    final name = Name.dirty(value);
+    state = state.copyWith(
+      name: name,
+      isValid: _isFormValid(),
+    );
+  }
+
+  onLastNameChanged(String value) {
+    final lastName = LastName.dirty(value);
+    state = state.copyWith(
+      lastName: lastName,
+      isValid: _isFormValid(),
+    );
+  }
+
+  onMaternalLastNameChanged(String value) {
+    final maternalLastName = LastName.dirty(value);
+    state = state.copyWith(
+      maternalLastName: maternalLastName,
+      isValid: _isFormValid(),
+    );
+  }
 
   onEmailChange(String value) {
-    final newEmail = Email.dirty(value);
+    final email = Email.dirty(value);
     state = state.copyWith(
-      email: newEmail,
-      isValid: Formz.validate([newEmail, state.password]),
+      email: email,
+      isValid: _isFormValid(),
     );
   }
 
   onPasswordChanged(String value) {
-    final newPassword = Password.dirty(value);
+    final password = Password.dirty(value);
     state = state.copyWith(
-      password: newPassword,
-      isValid: Formz.validate([newPassword, state.email]),
+      password: password,
+      isValid: _isFormValid(),
     );
   }
-  onNameChanged(String value) {
-    final newName = Name.dirty(value);
-    state = state.copyWith(
-      name: newName,
-      isValid: Formz.validate([newName, state.lastName]),
-    );
-  }
-  onLastNameChanged(String value) {
-    final newLastName = LastName.dirty(value);
-    state = state.copyWith(
-      lastName: newLastName,
-      isValid: Formz.validate([newLastName, state.name]),
-    );
-  }
+
   onPhoneChanged(String value) {
-    final newPhone = Phone.dirty(value);
+    final phone = Phone.dirty(value);
     state = state.copyWith(
-      phone: newPhone,
-      isValid: Formz.validate([newPhone, state.name]),
+      phone: phone,
+      isValid: _isFormValid(),
     );
+  }
+
+  bool _isFormValid() {
+    return Formz.validate([
+      state.name,
+      state.lastName, 
+      state.maternalLastName,
+      state.email,
+      state.password,
+      state.phone,
+    ]);
   }
 
   onFormSubmit() async {
@@ -56,83 +135,58 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
 
     if (!state.isValid) return;
 
-    print(state.toString());
+    try {
+      state = state.copyWith(
+        isPosting: true,
+        errorMessage: null,
+      );
+
+      await registerUserCallback(
+        email: state.email.value,
+        password: state.password.value,
+        nombre: state.name.value,
+        apellidoPaterno: state.lastName.value,
+        apellidoMaterno: state.maternalLastName.value,
+        telefono: state.phone.value,
+      );
+
+      state = state.copyWith(
+        isPosting: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isPosting: false,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
   _touchEveryField() {
-    final email = Email.dirty(state.email.value);
-    final password = Password.dirty(state.password.value);
     final name = Name.dirty(state.name.value);
     final lastName = LastName.dirty(state.lastName.value);
+    final maternalLastName = LastName.dirty(state.maternalLastName.value);
+    final email = Email.dirty(state.email.value);
+    final password = Password.dirty(state.password.value);
     final phone = Phone.dirty(state.phone.value);
-
 
     state = state.copyWith(
       isFormPosted: true,
-      email: email,
-      password: password,
       name: name,
       lastName: lastName,
+      maternalLastName: maternalLastName,
+      email: email,
+      password: password,
       phone: phone,
-      isValid: Formz.validate([email, password, name, lastName, phone]),
+      isValid: Formz.validate([name, lastName, maternalLastName, email, password, phone]),
     );
   }
 }
 
-//! 1 - State del provider
-class SignUpFormState {
-  final bool isPosting;
-  final bool isFormPosted;
-  final bool isValid;
-  final Email email;
-  final Password password;
-  final Name name;
-  final LastName lastName;
-  final Phone phone;
+// Provider
+final signUpFormProvider = StateNotifierProvider.autoDispose<SignUpFormNotifier, SignUpFormState>((ref) {
+  final registerUserCallback = ref.watch(authProvider.notifier).registerUser;
 
-  SignUpFormState({
-    this.isPosting = false,
-    this.isFormPosted = false,
-    this.isValid = false,
-    this.email = const Email.pure(),
-    this.password = const Password.pure(),
-    this.name = const Name.pure(),
-    this.lastName = const LastName.pure(),
-    this.phone = const Phone.pure(),
-  });
-
-  SignUpFormState copyWith({
-    bool? isPosting,
-    bool? isFormPosted,
-    bool? isValid,
-    Email? email,
-    Password? password,
-    Name? name,
-    LastName? lastName,
-    Phone? phone,
-  }) => SignUpFormState(
-    isPosting: isPosting ?? this.isPosting,
-    isFormPosted: isFormPosted ?? this.isFormPosted,
-    isValid: isValid ?? this.isValid,
-    email: email ?? this.email,
-    password: password ?? this.password,
-    name: name ?? this.name,
-    lastName: lastName ?? this.lastName,
-    phone: phone ?? this.phone,
+  return SignUpFormNotifier(
+    registerUserCallback: registerUserCallback,
   );
-
-  @override
-  String toString() {
-    return '''
-  LoginFormState:
-    isPosting: $isPosting
-    isFormPosted: $isFormPosted
-    isValid: $isValid
-    email: $email
-    password: $password
-    name: $name
-    lastName: $lastName
-    phone: $phone
-''';
-  }
-}
+});

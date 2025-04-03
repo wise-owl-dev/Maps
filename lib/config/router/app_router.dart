@@ -2,11 +2,12 @@ import 'package:go_router/go_router.dart';
 import 'package:maps_app/features/auth/auth.dart';
 import 'package:maps_app/features/menu/menu.dart';
 import 'package:maps_app/features/splash/splash.dart';
+import 'package:maps_app/password/admin_tools_screen.dart';
 
 
 
 final appRouter = GoRouter(
-  initialLocation: '/splash',
+  initialLocation: '/login',
   routes: [
 
     ///* Auth Routes
@@ -37,6 +38,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/user-menu',
       builder: (context, state) => const UserMenuScreen(),
+    ),
+    ///* Admin Tools Route
+    GoRoute(
+      path: '/admin-tools',
+      builder: (context, state) => const AdminToolsScreen(),
     ),
   ],
   ///! TODO: Bloquear si no se está autenticado de alguna manera

@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:maps_app/features/auth/presentation/providers/login_form_provider.dart';
+import 'package:maps_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:maps_app/features/shared/shared.dart';
-
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
+    // Escuchar cambios en el estado de autenticación
+    ref.listen(authProvider, (previous, current) {
+      if (current.isAuthenticated && previous?.isAuthenticated != true) {
+        // Redirigir según el rol del usuario
+        _redirectBasedOnRole(context, ref, current.userRole ?? 'usuario');
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -27,6 +33,21 @@ class LoginScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+  
+  void _redirectBasedOnRole(BuildContext context, WidgetRef ref, String role) {
+    switch (role) {
+      case 'admin':
+        context.go('/admin-menu');
+        break;
+      case 'operador':
+        context.go('/operador-menu');
+        break;
+      case 'usuario':
+      default:
+        context.go('/user-menu');
+        break;
+    }
   }
 }
 
@@ -55,56 +76,65 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
         const SizedBox(height: 32),
 
         CustomTextFormField(
-        label: 'Email',
-        hint: 'correo@ejemplo.com',
-        keyboardType: TextInputType.emailAddress,
-        onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
-        errorMessage: loginForm.isFormPosted ?
-               loginForm.email.errorMessage 
-               : null,
+          label: 'Email',
+          hint: 'correo@ejemplo.com',
+          keyboardType: TextInputType.emailAddress,
+          onChanged: ref.read(loginFormProvider.notifier).onEmailChange,
+          errorMessage: loginForm.isFormPosted ?
+                loginForm.email.errorMessage 
+                : null,
         ),
     
         const SizedBox(height: 16),
 
-      // Campo de contraseña
-      Stack(
-      alignment: Alignment.centerRight,
-      children: [
-        CustomTextFormField(
-          label: 'Contraseña',
-          hint: '********',
-          obscureText: _obscurePassword,
-          onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
-          errorMessage:loginForm.isFormPosted ?
-               loginForm.password.errorMessage 
-               : null, 
-        ),
-          
-        // Posicionar el botón para mostrar/ocultar contraseña
-        Positioned(
-          right: 15,
-          child: IconButton(
-            icon: Icon(
-              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-              color: Colors.grey,
+        // Campo de contraseña
+        Stack(
+          alignment: Alignment.centerRight,
+          children: [
+            CustomTextFormField(
+              label: 'Contraseña',
+              hint: '********',
+              obscureText: _obscurePassword,
+              onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
+              errorMessage: loginForm.isFormPosted ?
+                  loginForm.password.errorMessage 
+                  : null, 
             ),
-            onPressed: () {
-              setState(() {
-                _obscurePassword = !_obscurePassword;
-              });
-            },
-          ),
-        ),
-      ],
-      ), 
+              
+            // Posicionar el botón para mostrar/ocultar contraseña
+            Positioned(
+              right: 15,
+              child: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+            ),
+          ],
+        ), 
         _buildForgotPasswordLink(),
 
         const SizedBox(height: 24),
         CustomFilledButton(
-          text: 'Iniciar Sesión',
-          onPressed: () {
-            ref.read(loginFormProvider.notifier).onFormSubmit();
-          },
+          text: loginForm.isPosting ? 'Iniciando sesión...' : 'Iniciar Sesión',
+          onPressed: loginForm.isPosting 
+            ? null 
+            : () async {
+                ref.read(loginFormProvider.notifier).onFormSubmit();
+                
+                // Mostrar mensaje de error si hay uno
+                if (loginForm.errorMessage != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(loginForm.errorMessage!))
+                  );
+                }
+              },
         ),
 
         const SizedBox(height: 24),
@@ -117,6 +147,8 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
     );
   }
 
+  // ... el resto del código se mantiene igual
+  
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,10 +189,6 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
       ],
     );
   }
-
-  
-
- 
 
   Widget _buildForgotPasswordLink() {
     return Align(
@@ -210,11 +238,13 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
       ),
       child: OutlinedButton.icon(
         onPressed: () {
-          // Implementar lógica de login con Google
-          // ref.read(authProvider.notifier).signInWithGoogle();
+          // Esta funcionalidad necesitaría ser implementada en AuthService
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Funcionalidad no implementada'))
+          );
         },
         icon: Image.asset(
-          'assets/google_logo.png',  // Asegúrate de tener esta imagen
+          'assets/google_logo.png',
           height: 24,
         ),
         label: const Text(

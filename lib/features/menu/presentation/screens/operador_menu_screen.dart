@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class OperadorMenuScreen extends StatelessWidget {
+import '../../../auth/presentation/providers/auth_provider.dart';
+
+class OperadorMenuScreen extends ConsumerWidget {
   const OperadorMenuScreen({super.key});
 
   void _handleMenuOption(BuildContext context, String option) {
@@ -8,13 +12,30 @@ class OperadorMenuScreen extends StatelessWidget {
     // Implementar navegación
   }
 
-  void _handleLogout(BuildContext context) {
-    // Implementar cierre de sesión
-    Navigator.of(context).pushReplacementNamed('/login');
+  void _handleLogout(BuildContext context, WidgetRef ref) async {
+    try {
+      // Llama al método logout del provider
+      await ref.read(authProvider.notifier).logout();
+      
+      // Navegar usando go_router después de cerrar sesión
+      if (context.mounted) {
+        context.go('/login');
+      }
+      
+      print('Cierre de sesión exitoso');
+    } catch (e) {
+      print('Error al cerrar sesión: $e');
+      // Mostrar un mensaje de error si es necesario
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cerrar sesión: $e'))
+        );
+      }
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -90,7 +111,7 @@ class OperadorMenuScreen extends StatelessWidget {
               title: 'Cerrar sesión',
               textColor: Colors.blue,
               iconColor: Colors.blue,
-              onTap: () => _handleLogout(context),
+              onTap: () => _handleLogout(context, ref),
             ),
             const SizedBox(height: 16),
           ],
