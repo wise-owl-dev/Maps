@@ -1,6 +1,8 @@
+// lib/features/auth/presentation/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maps_app/core/error/error_handler.dart';
 import 'package:maps_app/features/auth/presentation/providers/login_form_provider.dart';
 import 'package:maps_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:maps_app/features/shared/shared.dart';
@@ -37,7 +39,7 @@ class LoginScreen extends ConsumerWidget {
   
   void _redirectBasedOnRole(BuildContext context, WidgetRef ref, String role) {
     switch (role) {
-      case 'admin':
+      case 'administrador':
         context.go('/admin-menu');
         break;
       case 'operador':
@@ -121,21 +123,23 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
         _buildForgotPasswordLink(),
 
         const SizedBox(height: 24),
-        CustomFilledButton(
-          text: loginForm.isPosting ? 'Iniciando sesión...' : 'Iniciar Sesión',
-          onPressed: loginForm.isPosting 
-            ? null 
-            : () async {
-                ref.read(loginFormProvider.notifier).onFormSubmit();
+       CustomFilledButton(
+        text: loginForm.isPosting ? 'Iniciando sesión...' : 'Iniciar Sesión',
+        onPressed: loginForm.isPosting 
+          ? null 
+          : () async {
+              try {
+                await ref.read(loginFormProvider.notifier).onFormSubmit();
+              } catch (e) {
+                print("Error capturado en LoginScreen: $e"); // Debug
                 
-                // Mostrar mensaje de error si hay uno
-                if (loginForm.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(loginForm.errorMessage!))
-                  );
+                // Usar el método específico para errores de autenticación
+                if (mounted) {
+                  ErrorHandler.showAuthErrorSnackBar(context, e);
                 }
-              },
-        ),
+              }
+            },
+      ),
 
         const SizedBox(height: 24),
         _buildOrDivider(),
@@ -246,6 +250,9 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
         icon: Image.asset(
           'assets/google_logo.png',
           height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.login, color: Colors.blue);
+          },
         ),
         label: const Text(
           'Iniciar con Google',

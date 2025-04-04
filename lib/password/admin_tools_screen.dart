@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maps_app/password/password_migration_util.dart';
 
 
-import '../features/auth/presentation/providers/auth_provider.dart' show supabaseClientProvider;
+import '../core/di/dependency_injection.dart'; 
 // Importa la utilidad de migración
 
 class AdminToolsScreen extends ConsumerWidget {

@@ -1,12 +1,24 @@
+// lib/features/menu/presentation/screens/operador_menu_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../auth/presentation/providers/auth_provider.dart';
+import 'package:maps_app/core/guards/auth_guard.dart';
+import 'package:maps_app/features/auth/presentation/providers/auth_provider.dart';
 
 class OperadorMenuScreen extends ConsumerWidget {
   const OperadorMenuScreen({super.key});
 
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Proteger esta pantalla solo para operadores
+    return AuthGuard(
+      allowedRoles: ['operador'],
+      child: _OperadorMenuContent(),
+    );
+  }
+}
+
+class _OperadorMenuContent extends ConsumerWidget {
   void _handleMenuOption(BuildContext context, String option) {
     print('Navegando a: $option');
     // Implementar navegación
@@ -36,6 +48,11 @@ class OperadorMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Obtener información del usuario autenticado
+    final authState = ref.watch(authProvider);
+    final userName = authState.user?.nombre ?? 'Operador';
+    final userEmail = authState.user?.email ?? 'operador@transporte.com';
+    
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -59,19 +76,19 @@ class OperadorMenuScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Operador',
-                        style: TextStyle(
+                        userName,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'operador@transporte.com',
-                        style: TextStyle(
+                        userEmail,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 14,
                         ),

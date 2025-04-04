@@ -1,75 +1,85 @@
 // lib/features/auth/presentation/providers/auth_provider.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../services/key_value_storage_service.dart';
-import '../../infrastructure/datasources/auth_datasource_impl.dart' show AuthDataSourceImpl;
+import 'package:maps_app/core/di/dependency_injection.dart';
+import 'package:maps_app/features/auth/domain/entities/Usuario.dart';
+import 'package:maps_app/services/key_value_storage_service.dart';
+import 'package:maps_app/features/auth/domain/usecases/login_usecase.dart';
+import 'package:maps_app/features/auth/domain/usecases/register_usecase.dart';
+import 'package:maps_app/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:maps_app/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:maps_app/features/auth/domain/usecases/is_authenticated_usecase.dart';
+import 'package:maps_app/services/key_value_storage_service.dart' as di;
 
 // Estado para manejar la autenticación
 class AuthState {
   final bool isAuthenticated;
-  final Map<String, dynamic>? userData;
+  final Usuario? user;
   final String errorMessage;
-  final String? userRole; // Añadimos el rol del usuario
 
   AuthState({
     this.isAuthenticated = false,
-    this.userData,
+    this.user,
     this.errorMessage = '',
-    this.userRole,
   });
+
+  String? get userRole => user?.rol;
 
   AuthState copyWith({
     bool? isAuthenticated,
-    Map<String, dynamic>? userData,
+    Usuario? user,
     String? errorMessage,
-    String? userRole,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      userData: userData ?? this.userData,
+      user: user ?? this.user,
       errorMessage: errorMessage ?? this.errorMessage,
-      userRole: userRole ?? this.userRole,
     );
   }
 }
 
 // Proveedor del estado de autenticación
 class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthDataSourceImpl authDataSource;
-  final KeyValueStorageService keyValueStorageService;
+  final LoginUseCase _loginUseCase;
+  final RegisterUseCase _registerUseCase;
+  final LogoutUseCase _logoutUseCase;
+  final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final IsAuthenticatedUseCase _isAuthenticatedUseCase;
+  final KeyValueStorageService _keyValueStorageService;
 
   AuthNotifier({
-    required this.authDataSource,
-    required this.keyValueStorageService,
-  }) : super(AuthState()) {
+    required LoginUseCase loginUseCase,
+    required RegisterUseCase registerUseCase,
+    required LogoutUseCase logoutUseCase,
+    required GetCurrentUserUseCase getCurrentUserUseCase,
+    required IsAuthenticatedUseCase isAuthenticatedUseCase,
+    required KeyValueStorageService keyValueStorageService,
+  }) : 
+    _loginUseCase = loginUseCase,
+    _registerUseCase = registerUseCase,
+    _logoutUseCase = logoutUseCase,
+    _getCurrentUserUseCase = getCurrentUserUseCase,
+    _isAuthenticatedUseCase = isAuthenticatedUseCase,
+    _keyValueStorageService = keyValueStorageService,
+    super(AuthState()) {
     checkAuthStatus();
   }
 
   // Verificar estado de autenticación al iniciar
   Future<void> checkAuthStatus() async {
-    final isAuthenticated = await authDataSource.isAuthenticated();
+    final isAuthenticated = await _isAuthenticatedUseCase.execute();
     
     if (isAuthenticated) {
       try {
-        final email = await authDataSource.getCurrentUserEmail();
-        if (email != null) {
-          final userData = await authDataSource.getUserInfo(email);
-          
-          // Determinar el rol del usuario
-          String userRole = 'usuario'; // Valor por defecto
-          
-          if (userData['tipo_usuario'] != null) {
-            userRole = userData['tipo_usuario'];
-          }
-          
+        final user = await _getCurrentUserUseCase.execute();
+        
+        if (user != null) {
           // Guardar el rol en el almacenamiento seguro
-          await keyValueStorageService.setKeyValue('user_role', userRole);
+          await _keyValueStorageService.setKeyValue('user_role', user.rol);
           
           state = state.copyWith(
             isAuthenticated: true,
-            userData: userData,
-            userRole: userRole,
+            user: user,
           );
         }
       } catch (e) {
@@ -81,24 +91,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   // Iniciar sesión
   Future<void> loginUser(String email, String password) async {
     try {
-      await authDataSource.login(email, password);
-      
-      final userData = await authDataSource.getUserInfo(email);
-      
-      // Determinar el rol del usuario
-      String userRole = 'usuario'; // Valor por defecto
-      
-      if (userData['tipo_usuario'] != null) {
-        userRole = userData['tipo_usuario'];
-      }
+      final user = await _loginUseCase.execute(email, password);
       
       // Guardar el rol en el almacenamiento seguro
-      await keyValueStorageService.setKeyValue('user_role', userRole);
+      await _keyValueStorageService.setKeyValue('user_role', user.rol);
       
       state = state.copyWith(
         isAuthenticated: true,
-        userData: userData,
-        userRole: userRole,
+        user: user,
         errorMessage: '',
       );
     } catch (e) {
@@ -111,7 +111,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   // Obtener el rol del usuario actual
   String getUserRole() {
-    return state.userRole ?? 'usuario';
+    return state.user?.rol ?? 'usuario';
   }
 
   // Registrar usuario
@@ -124,7 +124,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String telefono,
   }) async {
     try {
-      await authDataSource.register(
+      final user = await _registerUseCase.execute(
         email: email,
         password: password,
         nombre: nombre,
@@ -133,18 +133,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         telefono: telefono,
       );
       
-      final userData = await authDataSource.getUserInfo(email);
-      
-      // Al registrarse, el rol por defecto es 'usuario'
-      const userRole = 'usuario';
-      
       // Guardar el rol en el almacenamiento seguro
-      await keyValueStorageService.setKeyValue('user_role', userRole);
+      await _keyValueStorageService.setKeyValue('user_role', user.rol);
       
       state = state.copyWith(
         isAuthenticated: true,
-        userData: userData,
-        userRole: userRole,
+        user: user,
         errorMessage: '',
       );
     } catch (e) {
@@ -156,38 +150,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   // Cerrar sesión
-  // In AuthNotifier.logout()
-Future<void> logout() async {
-  print('Logout method called');
-  try {
-    await authDataSource.logout();
-    await keyValueStorageService.removeKey('user_role');
-    
-    print('Logout successful');
-    state = AuthState();
-  } catch (e) {
-    print('Error during logout: $e');
-    state = state.copyWith(
-      errorMessage: e.toString(),
-    );
+  Future<void> logout() async {
+    try {
+      await _logoutUseCase.execute();
+      await _keyValueStorageService.removeKey('user_role');
+      
+      state = AuthState();
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
   }
 }
-}
 
-// Providers
+// Provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final supabaseClient = Supabase.instance.client;
-  final keyValueStorageService = ref.watch(keyValueStorageProvider);
-  
-  final authDataSource = AuthDataSourceImpl(supabaseClient);
+  final loginUseCase = ref.watch(loginUseCaseProvider);
+  final registerUseCase = ref.watch(registerUseCaseProvider);
+  final logoutUseCase = ref.watch(logoutUseCaseProvider);
+  final getCurrentUserUseCase = ref.watch(getCurrentUserUseCaseProvider);
+  final isAuthenticatedUseCase = ref.watch(isAuthenticatedUseCaseProvider);
+  final keyValueStorageService = ref.watch(di.keyValueStorageProvider);
   
   return AuthNotifier(
-    authDataSource: authDataSource,
+    loginUseCase: loginUseCase,
+    registerUseCase: registerUseCase,
+    logoutUseCase: logoutUseCase,
+    getCurrentUserUseCase: getCurrentUserUseCase,
+    isAuthenticatedUseCase: isAuthenticatedUseCase,
     keyValueStorageService: keyValueStorageService,
   );
-});
-
-// Creamos un provider para el SupabaseClient que podrás usar en tu aplicación
-final supabaseClientProvider = Provider<SupabaseClient>((ref) {
-  return Supabase.instance.client;
 });

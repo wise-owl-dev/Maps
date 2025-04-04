@@ -1,18 +1,31 @@
+// lib/features/menu/presentation/screens/user_menu_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maps_app/core/guards/auth_guard.dart';
+import 'package:maps_app/features/auth/presentation/providers/auth_provider.dart';
 
-import '../../../auth/presentation/providers/auth_provider.dart';
-
-class UserMenuScreen extends ConsumerWidget{
+class UserMenuScreen extends ConsumerWidget {
   const UserMenuScreen({super.key});
 
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Proteger esta pantalla solo para usuarios y permitir a todos los roles autenticados
+    // Nota: En esta implementación permitimos a todos los roles acceder a UserMenuScreen
+    // Si quieres restringirlo solo a usuarios normales, usa: allowedRoles: ['usuario']
+    return AuthGuard(
+      child: _UserMenuContent(),
+    );
+  }
+}
+
+class _UserMenuContent extends ConsumerWidget {
   void _handleMenuOption(BuildContext context, String option) {
     print('Navegando a: $option');
     // Implementar navegación
   }
 
-   void _handleLogout(BuildContext context, WidgetRef ref) async {
+  void _handleLogout(BuildContext context, WidgetRef ref) async {
     try {
       // Llama al método logout del provider
       await ref.read(authProvider.notifier).logout();
@@ -36,6 +49,11 @@ class UserMenuScreen extends ConsumerWidget{
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Obtener información del usuario autenticado
+    final authState = ref.watch(authProvider);
+    final userName = authState.user?.nombre ?? 'Pasajero';
+    final userEmail = authState.user?.email ?? 'usuario@ejemplo.com';
+    
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -59,19 +77,19 @@ class UserMenuScreen extends ConsumerWidget{
                     ),
                   ),
                   const SizedBox(width: 15),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pasajero',
-                        style: TextStyle(
+                        userName,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'user@example.com',
-                        style: TextStyle(
+                        userEmail,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 14,
                         ),

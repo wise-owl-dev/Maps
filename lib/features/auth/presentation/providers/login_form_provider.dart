@@ -65,28 +65,33 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
   }
 
   onFormSubmit() async {
-    _touchEveryField();
+  _touchEveryField();
 
-    if (!state.isValid) return;
+  if (!state.isValid) return;
 
-    try {
-      state = state.copyWith(
-        isPosting: true,
-        errorMessage: null,
-      );
+  try {
+    state = state.copyWith(
+      isPosting: true,
+      errorMessage: null,
+    );
 
-      await loginUserCallback(state.email.value, state.password.value);
+    await loginUserCallback(state.email.value, state.password.value);
 
-      state = state.copyWith(
-        isPosting: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isPosting: false,
-        errorMessage: e.toString(),
-      );
-    }
+    state = state.copyWith(
+      isPosting: false,
+    );
+  } catch (e) {
+    print("Error capturado en LoginFormNotifier: $e"); // Debug
+    
+    state = state.copyWith(
+      isPosting: false,
+      errorMessage: e.toString(),
+    );
+    
+    // Importante: propagar la excepción para que el widget la capture
+    rethrow;
   }
+}
 
   _touchEveryField() {
     final email = Email.dirty(state.email.value);

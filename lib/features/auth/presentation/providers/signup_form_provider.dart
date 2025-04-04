@@ -14,6 +14,8 @@ class SignUpFormState {
   final LastName maternalLastName;
   final Email email;
   final Password password;
+  final Password confirmPassword;
+  final bool passwordsMatch;
   final Phone phone;
   final String? errorMessage;
 
@@ -26,6 +28,8 @@ class SignUpFormState {
     this.maternalLastName = const LastName.pure(),
     this.email = const Email.pure(),
     this.password = const Password.pure(),
+    this.confirmPassword = const Password.pure(),
+    this.passwordsMatch = true,
     this.phone = const Phone.pure(),
     this.errorMessage,
   });
@@ -39,6 +43,8 @@ class SignUpFormState {
     LastName? maternalLastName,
     Email? email,
     Password? password,
+    Password? confirmPassword,
+    bool? passwordsMatch,
     Phone? phone,
     String? errorMessage,
   }) {
@@ -51,6 +57,8 @@ class SignUpFormState {
       maternalLastName: maternalLastName ?? this.maternalLastName,
       email: email ?? this.email,
       password: password ?? this.password,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+      passwordsMatch: passwordsMatch ?? this.passwordsMatch,
       phone: phone ?? this.phone,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -105,8 +113,26 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
 
   onPasswordChanged(String value) {
     final password = Password.dirty(value);
+    
+    // Verificar si las contraseñas coinciden
+    final passwordsMatch = password.value == state.confirmPassword.value;
+    
     state = state.copyWith(
       password: password,
+      passwordsMatch: passwordsMatch,
+      isValid: _isFormValid(),
+    );
+  }
+  
+  onConfirmPasswordChanged(String value) {
+    final confirmPassword = Password.dirty(value);
+    
+    // Verificar si las contraseñas coinciden
+    final passwordsMatch = state.password.value == confirmPassword.value;
+    
+    state = state.copyWith(
+      confirmPassword: confirmPassword,
+      passwordsMatch: passwordsMatch,
       isValid: _isFormValid(),
     );
   }
@@ -120,20 +146,33 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
   }
 
   bool _isFormValid() {
-    return Formz.validate([
+    final formValid = Formz.validate([
       state.name,
       state.lastName, 
       state.maternalLastName,
       state.email,
       state.password,
+      state.confirmPassword,
       state.phone,
     ]);
+    
+    // Para que el formulario sea válido, además de que los campos sean válidos,
+    // las contraseñas deben coincidir
+    return formValid && state.passwordsMatch;
   }
 
   onFormSubmit() async {
     _touchEveryField();
 
     if (!state.isValid) return;
+    
+    // Verificación adicional de que las contraseñas coinciden
+    if (!state.passwordsMatch) {
+      state = state.copyWith(
+        errorMessage: 'Las contraseñas no coinciden'
+      );
+      return;
+    }
 
     try {
       state = state.copyWith(
@@ -154,10 +193,15 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
         isPosting: false,
       );
     } catch (e) {
+      print("Error capturado en SignUpFormNotifier: $e"); // Debug
+      
       state = state.copyWith(
         isPosting: false,
         errorMessage: e.toString(),
       );
+      
+      // Importante: re-lanzar la excepción para que el widget la capture
+      rethrow;
     }
   }
 
@@ -167,7 +211,11 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
     final maternalLastName = LastName.dirty(state.maternalLastName.value);
     final email = Email.dirty(state.email.value);
     final password = Password.dirty(state.password.value);
+    final confirmPassword = Password.dirty(state.confirmPassword.value);
     final phone = Phone.dirty(state.phone.value);
+    
+    // Verificar si las contraseñas coinciden
+    final passwordsMatch = password.value == confirmPassword.value;
 
     state = state.copyWith(
       isFormPosted: true,
@@ -176,8 +224,10 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
       maternalLastName: maternalLastName,
       email: email,
       password: password,
+      confirmPassword: confirmPassword,
+      passwordsMatch: passwordsMatch,
       phone: phone,
-      isValid: Formz.validate([name, lastName, maternalLastName, email, password, phone]),
+      isValid: Formz.validate([name, lastName, maternalLastName, email, password, confirmPassword, phone]) && passwordsMatch,
     );
   }
 }

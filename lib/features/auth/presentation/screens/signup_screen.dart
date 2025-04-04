@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:maps_app/core/error/error_handler.dart';
 import 'package:maps_app/features/auth/auth.dart';
 import 'package:maps_app/features/shared/shared.dart';
 
@@ -16,6 +17,7 @@ class SignUpScreen extends ConsumerStatefulWidget {
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     ref.listen(authProvider, (previous, current) {
       if (current.isAuthenticated && previous?.isAuthenticated != true) {
         // Los usuarios nuevos siempre serán redirigidos al dashboard de usuario estándar
-        context.go('/login');
+        context.go('/user-menu');
+        
+        // Mostrar mensaje de éxito
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registro exitoso. Por favor inicia sesión.'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     });
     
@@ -129,7 +139,52 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     ),
                   ),
                 ],
-              ), 
+              ),
+              // Ayuda para la contraseña
+              Padding(
+                padding: const EdgeInsets.only(left: 12, top: 4),
+                child: Text(
+                  'La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un número.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Campo de confirmar contraseña
+              Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  CustomTextFormField(
+                    label: 'Confirmar Contraseña',
+                    hint: '********',
+                    obscureText: _obscureConfirmPassword,
+                    onChanged: ref.read(signUpFormProvider.notifier).onConfirmPasswordChanged,
+                    errorMessage: signUpForm.isFormPosted ?
+                        (signUpForm.confirmPassword.errorMessage ?? 
+                        (!signUpForm.passwordsMatch ? 'Las contraseñas no coinciden' : null))
+                        : null, 
+                  ),
+                    
+                  // Posicionar el botón para mostrar/ocultar contraseña
+                  Positioned(
+                    right: 15,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               // Campo de teléfono
               CustomTextFormField(
@@ -141,21 +196,20 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     signUpForm.phone.errorMessage 
                     : null,
               ),
-              const SizedBox(height: 16),
               const SizedBox(height: 32),
               // Botón de registro
               CustomFilledButton(
                 text: signUpForm.isPosting ? 'Registrando...' : 'Registrarse',
                 onPressed: signUpForm.isPosting 
                   ? null 
-                  : () {
-                      ref.read(signUpFormProvider.notifier).onFormSubmit();
-                      
-                      // Mostrar mensaje de error si hay uno
-                      if (signUpForm.errorMessage != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(signUpForm.errorMessage!))
-                        );
+                  : () async {
+                      try {
+                        await ref.read(signUpFormProvider.notifier).onFormSubmit();
+                      } catch (e) {
+                        // Usar el servicio mejorado de manejo de errores para mostrar mensajes amigables
+                        if (mounted) {
+                          ErrorHandler.showAuthErrorSnackBar(context, e);
+                        }
                       }
                     },
               ),

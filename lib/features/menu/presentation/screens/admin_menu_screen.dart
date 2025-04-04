@@ -1,15 +1,32 @@
+// lib/features/menu/presentation/screens/admin_menu_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../auth/presentation/providers/auth_provider.dart';
+import 'package:maps_app/core/guards/auth_guard.dart';
+import 'package:maps_app/features/auth/presentation/providers/auth_provider.dart';
 
 class AdminMenuScreen extends ConsumerWidget {
   const AdminMenuScreen({super.key});
+  
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Proteger esta pantalla solo para administradores
+    return AuthGuard(
+      allowedRoles: ['administrador'],
+      child: _AdminMenuContent(),
+    );
+  }
+}
 
+class _AdminMenuContent extends ConsumerWidget {
   void _handleMenuOption(BuildContext context, String option) {
     print('Navegando a: $option');
     // Implementar navegación
+    
+    // Ejemplo:
+    if (option == 'Herramientas de Admin') {
+      context.push('/admin-tools');
+    }
   }
 
   void _handleLogout(BuildContext context, WidgetRef ref) async {
@@ -36,6 +53,11 @@ class AdminMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Obtener información del usuario autenticado
+    final authState = ref.watch(authProvider);
+    final userName = authState.user?.nombre ?? 'Administrador';
+    final userEmail = authState.user?.email ?? 'admin@transporte.com';
+    
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -59,19 +81,19 @@ class AdminMenuScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Administrador',
-                        style: TextStyle(
+                        userName,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'admin@transporte.com',
-                        style: TextStyle(
+                        userEmail,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 14,
                         ),
@@ -113,6 +135,11 @@ class AdminMenuScreen extends ConsumerWidget {
                     icon: Icons.analytics_outlined,
                     title: 'Paradas',
                     onTap: () => _handleMenuOption(context, 'Paradas'),
+                  ),
+                  _MenuOption(
+                    icon: Icons.admin_panel_settings,
+                    title: 'Herramientas de Admin',
+                    onTap: () => _handleMenuOption(context, 'Herramientas de Admin'),
                   ),
                 ],
               ),
