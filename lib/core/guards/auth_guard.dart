@@ -47,7 +47,7 @@ class AuthGuard extends ConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Redirigir a la pantalla correspondiente según el rol
         switch (userRole) {
-          case 'admin':
+          case 'administrador':
             GoRouter.of(context).go('/admin-menu');
             break;
           case 'operador':

@@ -1,4 +1,5 @@
-// lib/features/auth/infrastructure/repositories/auth_repository_impl.dart
+
+
 import 'package:maps_app/features/auth/domain/repositories/auth_repository.dart';
 import '../../domain/entities/Usuario.dart';
 import '../datasources/auth_datasource_impl.dart';
@@ -58,16 +59,13 @@ class AuthRepositoryImpl implements AuthRepository {
     return _mapUserDataToEntity(userData);
   }
   
+  @override
+  Future<void> updatePassword(String email, String newPassword) async {
+    await _dataSource.updatePassword(email, newPassword);
+  }
+  
   // Método auxiliar para mapear los datos de usuario a una entidad
   Usuario _mapUserDataToEntity(Map<String, dynamic> userData) {
-    return Usuario(
-      id: userData['id'],
-      email: userData['correo'],
-      nombre: userData['nombre'],
-      apellidoPaterno: userData['apellido_paterno'],
-      apellidoMaterno: userData['apellido_materno'],
-      telefono: userData['telefono'],
-      rol: userData['role'],
-    );
+    return Usuario.fromMap(userData);
   }
 }

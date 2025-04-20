@@ -1,3 +1,4 @@
+// lib/features/auth/infrastructure/datasources/auth_datasource_impl.dart
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -27,7 +28,7 @@ class AuthException implements Exception {
 
 // Constantes para los roles de usuario
 class UserRoles {
-  static const String administrador = 'admin';
+  static const String administrador = 'administrador';
   static const String operador = 'operador';
   static const String usuario = 'usuario';
 }
@@ -62,12 +63,16 @@ class AuthDataSourceImpl {
   // Login de usuario mejorado con mensajes de error específicos
   Future<void> login(String email, String password) async {
     try {
+      print("Iniciando login para: $email");
+      
       // Primero verificar si el usuario existe en la base de datos
       final userExists = await _supabaseClient
           .from('usuario')
           .select('id')
           .eq('correo', email)
           .maybeSingle();
+      
+      print("Usuario existe: ${userExists != null}");
       
       if (userExists == null) {
         throw AuthException(
@@ -78,13 +83,17 @@ class AuthDataSourceImpl {
       
       // Si el usuario existe, verificamos la contraseña
       final salt = await _getUserSalt(email);
+      print("Salt obtenido: ${salt ?? 'NULL'}");
+      
       String hashedPassword;
       
       if (salt != null && salt.isNotEmpty) {
         hashedPassword = _hashPassword(password, salt);
+        print("Usando password con salt: $hashedPassword");
       } else {
         // Método antiguo para compatibilidad
         hashedPassword = _oldHashPassword(password);
+        print("Usando password sin salt: $hashedPassword");
       }
       
       // Verificar la contraseña
@@ -94,6 +103,8 @@ class AuthDataSourceImpl {
           .eq('correo', email)
           .eq('password', hashedPassword)
           .maybeSingle();
+      
+      print("Verificación de contraseña: ${userWithPassword != null}");
       
       if (userWithPassword == null) {
         throw AuthException(
@@ -111,25 +122,21 @@ class AuthDataSourceImpl {
       await _secureStorage.write(key: 'user_role', value: userData['role']);
       await _secureStorage.write(key: 'is_logged_in', value: 'true');
       
-       // Al iniciar sesión, actualizar is_logged_in en la base de datos
-      await _supabaseClient
-        .from('usuario')
-        .update({
-          'is_logged_in': true,
-          'last_login': DateTime.now().toIso8601String()
-        })
-        .eq('correo', email);
-      
-      // Actualizar last_login
+      // Actualizar estado de sesión en la base de datos
       await _supabaseClient
           .from('usuario')
-          .update({'last_login': DateTime.now().toIso8601String()})
+          .update({
+            'is_logged_in': true,
+            'last_login': DateTime.now().toIso8601String()
+          })
           .eq('id', userData['id']);
       
       // Registrar intento de login exitoso
       await _registerLoginAttempt(email, true);
       
     } catch (e) {
+      print("Error en login: $e");
+      
       // Registrar intento de login fallido
       if (e is! AuthException || e.errorType != AuthErrorType.userNotFound) {
         await _registerLoginAttempt(email, false);
@@ -157,6 +164,7 @@ class AuthDataSourceImpl {
       
       return userData['salt'];
     } catch (e) {
+      print("Error al obtener salt: $e");
       return null;
     }
   }
@@ -171,7 +179,8 @@ class AuthDataSourceImpl {
             'ip_address': 'app_client', // Idealmente usaríamos la IP real
             'success': success,
           });
-    } catch (_) {
+    } catch (e) {
+      print("Error al registrar intento de login: $e");
       // Ignoramos errores aquí para no interferir con el flujo principal
     }
   }
@@ -204,6 +213,9 @@ class AuthDataSourceImpl {
       final salt = _generateSalt();
       final hashedPassword = _hashPassword(password, salt);
       
+      print("Registrando usuario con salt: $salt");
+      print("Password hasheado: $hashedPassword");
+      
       // Insertar el nuevo usuario
       final response = await _supabaseClient
           .from('usuario')
@@ -227,7 +239,17 @@ class AuthDataSourceImpl {
       await _secureStorage.write(key: 'user_role', value: UserRoles.usuario);
       await _secureStorage.write(key: 'is_logged_in', value: 'true');
       
+      // Actualizar estado de sesión en la base de datos
+      await _supabaseClient
+          .from('usuario')
+          .update({
+            'is_logged_in': true,
+            'last_login': DateTime.now().toIso8601String()
+          })
+          .eq('id', response['id']);
+      
     } catch (e) {
+      print("Error en registro: $e");
       if (e is AuthException) {
         rethrow;
       } else {
@@ -241,56 +263,33 @@ class AuthDataSourceImpl {
 
   // Cerrar sesión
   Future<void> logout() async {
-  try {
-    // Obtener el email actual antes de borrar la sesión
-    final email = await getCurrentUserEmail();
-    
-    if (email != null) {
-      // Actualizar is_logged_in en la base de datos
-      await _supabaseClient
-          .from('usuario')
-          .update({'is_logged_in': false})
-          .eq('correo', email);
+    try {
+      // Obtener el email actual antes de borrar la sesión
+      final email = await getCurrentUserEmail();
+      final userId = await _secureStorage.read(key: 'user_id');
+      
+      if (email != null && userId != null) {
+        // Actualizar is_logged_in en la base de datos
+        await _supabaseClient
+            .from('usuario')
+            .update({'is_logged_in': false})
+            .eq('id', userId);
+      }
+      
+      // Eliminar datos de sesión local
+      await _secureStorage.delete(key: 'user_email');
+      await _secureStorage.delete(key: 'user_id');
+      await _secureStorage.delete(key: 'user_role');
+      await _secureStorage.delete(key: 'is_logged_in');
+    } catch (e) {
+      print("Error en logout: $e");
+      throw AuthException(
+        'Error al cerrar sesión: $e',
+        AuthErrorType.unknown
+      );
     }
-    
-    // Eliminar datos de sesión local
-    await _secureStorage.delete(key: 'user_email');
-    await _secureStorage.delete(key: 'user_id');
-    await _secureStorage.delete(key: 'user_role');
-    await _secureStorage.delete(key: 'is_logged_in');
-  } catch (e) {
-    throw AuthException(
-      'Error al cerrar sesión: $e',
-      AuthErrorType.unknown
-    );
   }
-}
 
-// Método para regenerar salt y actualizar contraseña (útil para reset de contraseña)
-Future<void> updatePassword(String email, String newPassword) async {
-  try {
-    // Generar nuevo salt
-    final salt = _generateSalt();
-    final hashedPassword = _hashPassword(newPassword, salt);
-    
-    // Actualizar en la base de datos
-    await _supabaseClient
-        .from('usuario')
-        .update({
-          'password': hashedPassword,
-          'salt': salt,
-          'password_version': 2,
-          'requires_password_reset': false,
-          'updated_at': DateTime.now().toIso8601String()
-        })
-        .eq('correo', email);
-  } catch (e) {
-    throw AuthException(
-      'Error al actualizar contraseña: $e',
-      AuthErrorType.unknown
-    );
-  }
-}
   Future<Map<String, dynamic>> getUserInfo(String email) async {
     try {
       final userData = await _supabaseClient
@@ -302,8 +301,6 @@ Future<void> updatePassword(String email, String newPassword) async {
       // Normalizar el rol del usuario
       String userRole = userData['tipo_usuario'] ?? UserRoles.usuario;
       
-      // Normalizar los roles para asegurar consistencia
-      if (userRole == 'admin') userRole = UserRoles.administrador;
       
       // Alternativa: determinar el rol basado en relaciones
       if (userData['administrador'] != null && userData['administrador'] is Map && userData['administrador'].isNotEmpty) {
@@ -318,6 +315,7 @@ Future<void> updatePassword(String email, String newPassword) async {
       
       return userData;
     } catch (e) {
+      print("Error al obtener info de usuario: $e");
       throw AuthException(
         'Error al obtener información del usuario: $e',
         AuthErrorType.unknown
@@ -339,6 +337,33 @@ Future<void> updatePassword(String email, String newPassword) async {
   // Obtener el rol del usuario actual
   Future<String?> getCurrentUserRole() async {
     return await _secureStorage.read(key: 'user_role');
+  }
+
+  // Método para regenerar salt y actualizar contraseña (útil para reset de contraseña)
+  Future<void> updatePassword(String email, String newPassword) async {
+    try {
+      // Generar nuevo salt
+      final salt = _generateSalt();
+      final hashedPassword = _hashPassword(newPassword, salt);
+      
+      // Actualizar en la base de datos
+      await _supabaseClient
+          .from('usuario')
+          .update({
+            'password': hashedPassword,
+            'salt': salt,
+            'password_version': 2,
+            'requires_password_reset': false,
+            'updated_at': DateTime.now().toIso8601String()
+          })
+          .eq('correo', email);
+    } catch (e) {
+      print("Error al actualizar contraseña: $e");
+      throw AuthException(
+        'Error al actualizar contraseña: $e',
+        AuthErrorType.unknown
+      );
+    }
   }
 
   // Crear un nuevo administrador
@@ -395,6 +420,7 @@ Future<void> updatePassword(String email, String newPassword) async {
           });
       
     } catch (e) {
+      print("Error al crear administrador: $e");
       if (e is AuthException) {
         rethrow;
       } else {
@@ -448,6 +474,7 @@ Future<void> updatePassword(String email, String newPassword) async {
             'telefono': telefono,
             'tipo_usuario': UserRoles.operador,
             'password_version': 2,
+            'licencia': 'PENDIENTE', // Campo requerido para operadores
           })
           .select()
           .single();
@@ -457,9 +484,11 @@ Future<void> updatePassword(String email, String newPassword) async {
           .from('operador')
           .insert({
             'usuario_id': userResponse['id'],
+            'licencia': 'PENDIENTE', // Campo requerido para operadores
           });
       
     } catch (e) {
+      print("Error al crear operador: $e");
       if (e is AuthException) {
         rethrow;
       } else {

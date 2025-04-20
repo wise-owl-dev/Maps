@@ -11,6 +11,8 @@ import 'package:maps_app/features/auth/infrastructure/repositories/auth_reposito
 import 'package:maps_app/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
 import 'package:maps_app/services/key_value_storage_service.dart';
 
+import '../../features/auth/domain/usecases/update_password_use_case.dart';
+
 /// Configuración de inyección de dependencias usando Riverpod
 
 // Providers de infraestructura
@@ -57,4 +59,10 @@ final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
 final isAuthenticatedUseCaseProvider = Provider<IsAuthenticatedUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return IsAuthenticatedUseCase(repository);
+});
+
+// Providers de casos de uso
+final updatePasswordUseCaseProvider = Provider<UpdatePasswordUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return UpdatePasswordUseCase(repository);
 });
